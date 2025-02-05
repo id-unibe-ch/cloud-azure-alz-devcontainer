@@ -1,10 +1,14 @@
-name: "Build"
+name: "CI"
 
-on: [push]
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
 
 permissions:
   contents: read
-  packages: write
+  packages: read
 
 jobs:
   build:
@@ -23,6 +27,4 @@ jobs:
       - name: Pre-build dev container image
         uses: devcontainers/ci@v0.3
         with:
-          imageName: ghcr.io/kreemer/cloud-azure-alz-devcontainer
-          cacheFrom: ghcr.io/example/cloud-azure-alz-devcontainer
-          push: always
+          cacheFrom: ghcr.io/ub-unibe-ch/cloud-azure-alz-devcontainer
