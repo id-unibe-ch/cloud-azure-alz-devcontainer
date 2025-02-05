@@ -14,4 +14,4 @@ ENV PATH="$PATH:/home/linuxbrew/.linuxbrew/bin"
 
 ADD ./Brewfile /tmp/install/Brewfile
 
-RUN brew config && cd /tmp/install && brew bundle -v
+RUN brew config && cd /tmp/install && brew bundle -v && brew cleanup --prune=all 
