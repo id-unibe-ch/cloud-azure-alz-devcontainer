@@ -4,20 +4,7 @@
     "ghcr.io/devcontainers/features/terraform:1": {},
     "ghcr.io/devcontainers/features/azure-cli:1": {},
     "ghcr.io/devcontainers/features/github-cli:1": {},
-    "ghcr.io/devcontainers/features/python:1": {},
-    "ghcr.io/devcontainers/features/node:1": {},
-    "ghcr.io/devcontainers-extra/features/homebrew-package:1": {
-      "package": "trivy"
-    },
-    "ghcr.io/devcontainers-extra/features/homebrew-package:1": {
-      "package": "terraform-docs"
-    },
-    "ghcr.io/devcontainers-extra/features/homebrew-package:1": {
-      "package": "checkov"
-    },
-    "ghcr.io/devcontainers-extra/features/homebrew-package:1": {
-      "package": "pre-commit"
-    }
+    "./features/tools": {}
   }
 }
 
