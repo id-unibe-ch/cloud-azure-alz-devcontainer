@@ -1,0 +1,19 @@
+name: "Build"
+
+on: [push]
+
+permissions:
+  packages: write
+
+jobs:
+  build:
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Pre-build dev container image
+        uses: devcontainers/ci@v0.3
+        with:
+          imageName: ghcr.io/kreemer/cloud-azure-alz-devcontainer
+          cacheFrom: ghcr.io/example/cloud-azure-alz-devcontainer
+          push: always
