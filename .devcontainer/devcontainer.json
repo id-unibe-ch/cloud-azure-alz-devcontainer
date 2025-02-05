@@ -1,0 +1,21 @@
+{
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {
+    "ghcr.io/devcontainers/features/terraform:1": {},
+    "ghcr.io/devcontainers/features/azure-cli:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/python:1": {},
+    "ghcr.io/devcontainers/features/node:1": {},
+    "ghcr.io/devcontainers-extra/features/homebrew-package:1": {
+      "package": "trivy"
+    },
+    "ghcr.io/devcontainers-extra/features/terraform-docs:1": {}
+  },
+  "postCreateCommand": "pip3 install -r requirements.txt && pre-commit install",
+  "customizations": {
+    "vscode": {
+      "extensions": ["esbenp.prettier-vscode", "redhat.vscode-yaml"]
+    }
+  }
+}
+
