@@ -13,7 +13,7 @@ permissions:
   packages: write
 
 jobs:
-  cd:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
