@@ -27,4 +27,4 @@ jobs:
       - name: Pre-build dev container image
         uses: devcontainers/ci@v0.3
         with:
-          cacheFrom: ghcr.io/ub-unibe-ch/cloud-azure-alz-devcontainer
+          cacheFrom: ghcr.io/id-unibe-ch/cloud-azure-alz-devcontainer
