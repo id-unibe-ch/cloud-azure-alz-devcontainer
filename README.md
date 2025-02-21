@@ -11,10 +11,11 @@ The image is based on the base image `mcr.microsoft.com/devcontainers/base:ubunt
 - Terraform
 - tflint
 - Homebrew
-- terraform-docs (by Homebrew)
-- pre-commit (by Homebrew)
-- checkov (by Homebrew)
-- trivy (by Homebrew)
+- terraform-docs
+- pre-commit
+- checkov
+- trivy
+- jsonschema
 
 ## Usage
 
