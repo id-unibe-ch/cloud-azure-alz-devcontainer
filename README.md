@@ -16,6 +16,7 @@ The image is based on the base image `mcr.microsoft.com/devcontainers/base:ubunt
 - checkov
 - trivy
 - jsonschema
+- alzlibtool
 
 ## Usage
 
