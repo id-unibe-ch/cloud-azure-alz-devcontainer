@@ -50,6 +50,7 @@ RUN /usr/local/go/bin/go install github.com/Azure/alzlib/cmd/alzlibtool@latest
 FROM intermediate
 
 COPY --from=azure-build /usr/bin/az /usr/bin/az 
+COPY --from=azure-build /opt/az /opt/az
 COPY --from=gh-build /usr/bin/gh /usr/bin/gh
 COPY --from=terraform-build /usr/bin/terraform /usr/bin/terraform
 COPY --from=terraform-build /usr/bin/terraform-ls /usr/bin/terraform-ls
