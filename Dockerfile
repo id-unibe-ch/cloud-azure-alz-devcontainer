@@ -33,10 +33,6 @@ FROM intermediate AS tflint-build
 
 RUN curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
 
-FROM intermediate AS jsonschema-build
-
-RUN /bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/sourcemeta/jsonschema/main/install -H "Cache-Control: no-cache, no-store, must-revalidate")"
-
 FROM intermediate AS alzlibtool-build
 
 ENV GO_VERSION=1.24.1
@@ -57,10 +53,9 @@ COPY --from=terraform-build /usr/bin/terraform-ls /usr/bin/terraform-ls
 COPY --from=trivy-build /usr/bin/trivy /usr/bin/trivy
 COPY --from=quay.io/terraform-docs/terraform-docs:latest /usr/local/bin/terraform-docs /usr/local/bin/terraform-docs
 COPY --from=tflint-build /usr/local/bin/tflint /usr/local/bin/tflint
-COPY --from=jsonschema-build /usr/local/bin/jsonschema /usr/local/bin/jsonschema
 COPY --from=alzlibtool-build /root/go/bin/alzlibtool /usr/local/bin/alzlibtool
 
-RUN pip3 install --no-cache-dir pre-commit checkov
+RUN pip3 install --no-cache-dir pre-commit checkov check-jsonschema
 
 # Install homebrew
 RUN mkdir -p /home/linuxbrew \
