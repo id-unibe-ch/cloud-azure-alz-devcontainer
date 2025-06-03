@@ -1,7 +1,7 @@
 FROM mcr.microsoft.com/devcontainers/base:ubuntu AS intermediate
 
 USER root
-RUN mkdir -p /etc/apt/keyrings && apt-get update && apt-get install curl jq apt-transport-https ca-certificates gnupg lsb-release python3-pip -y && rm -rf /var/lib/apt/lists/*
+RUN mkdir -p /etc/apt/keyrings && apt-get update && apt-get install curl jq apt-transport-https ca-certificates gnupg lsb-release python3-pip pipx -y && rm -rf /var/lib/apt/lists/*
 
 FROM intermediate AS azure-build
 
@@ -55,8 +55,6 @@ COPY --from=quay.io/terraform-docs/terraform-docs:latest /usr/local/bin/terrafor
 COPY --from=tflint-build /usr/local/bin/tflint /usr/local/bin/tflint
 COPY --from=alzlibtool-build /root/go/bin/alzlibtool /usr/local/bin/alzlibtool
 
-RUN pip3 install --no-cache-dir pre-commit checkov check-jsonschema
-
 # Install homebrew
 RUN mkdir -p /home/linuxbrew \
   && git clone https://github.com/Homebrew/brew /home/linuxbrew/.linuxbrew \
@@ -64,6 +62,8 @@ RUN mkdir -p /home/linuxbrew \
   && chown -R vscode /home/linuxbrew/.linuxbrew
 
 USER vscode
+
+RUN pipx ensurepath && pipx install pre-commit checkov check-jsonschema
 
 ENV PATH="$PATH:/home/linuxbrew/.linuxbrew/bin"
 RUN brew config && brew cleanup --prune=all 
