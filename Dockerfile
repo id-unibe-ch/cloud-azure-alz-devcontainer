@@ -63,7 +63,7 @@ RUN mkdir -p /home/linuxbrew \
 
 USER vscode
 
-RUN pipx ensurepath && pipx install pre-commit checkov check-jsonschema
+RUN pipx ensurepath && pipx install pre-commit checkov check-jsonschema jsonschema-markdown
 
 ENV PATH="$PATH:/home/linuxbrew/.linuxbrew/bin"
 RUN brew config && brew cleanup --prune=all 
