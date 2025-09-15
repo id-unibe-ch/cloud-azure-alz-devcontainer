@@ -1,20 +1,21 @@
 FROM mcr.microsoft.com/devcontainers/base:ubuntu AS intermediate
 
 USER root
-RUN mkdir -p /etc/apt/keyrings && apt-get update && apt-get install curl jq apt-transport-https ca-certificates gnupg lsb-release python3-pip pipx -y && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /etc/apt/keyrings \
+    && apt-get update \
+    && apt-get install curl jq apt-transport-https ca-certificates gnupg lsb-release python3-pip pipx -y \
+    && rm -rf /var/lib/apt/lists/*
 
 FROM intermediate AS azure-build
 
-RUN curl -sLS https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | tee /etc/apt/keyrings/microsoft.gpg > /dev/null \
-    && chmod go+r /etc/apt/keyrings/microsoft.gpg \
-    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/microsoft.list > /dev/null
-RUN apt-get update && apt-get install -y azure-cli && rm -rf /var/lib/apt/lists/*
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 
 FROM intermediate AS gh-build
 
 RUN curl -sLS https://cli.github.com/packages/githubcli-archive-keyring.gpg | tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
- 	&& chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
- 	&& echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null 
+    && chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null 
 RUN apt-get update && apt-get install -y gh && rm -rf /var/lib/apt/lists/*
 
 FROM intermediate AS terraform-build
@@ -26,20 +27,21 @@ RUN apt-get update && apt-get install -y terraform terraform-ls && rm -rf /var/l
 FROM intermediate AS trivy-build
 
 RUN wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | tee /usr/share/keyrings/trivy.gpg > /dev/null \
-    && echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main" | tee -a /etc/apt/sources.list.d/trivy.list
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main" | tee -a /etc/apt/sources.list.d/trivy.list
 RUN apt-get update && apt-get install -y trivy && rm -rf /var/lib/apt/lists/*
 
 FROM intermediate AS tflint-build
 
 RUN curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
 
-FROM intermediate AS alzlibtool-build
+FROM --platform=$BUILDPLATFORM intermediate AS alzlibtool-build
 
+ARG TARGETARCH
 ENV GO_VERSION=1.24.1
-RUN curl -sSLo ./go${GO_VERSION}.linux-amd64.tar.gz https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz \
-    && tar -xzf go${GO_VERSION}.linux-amd64.tar.gz \
+RUN curl -sSLo ./go${GO_VERSION}.linux-${TARGETARCH}.tar.gz https://go.dev/dl/go${GO_VERSION}.linux-${TARGETARCH}.tar.gz \
+    && tar -xzf go${GO_VERSION}.linux-${TARGETARCH}.tar.gz \
     && mv go /usr/local \
-    && rm go${GO_VERSION}.linux-amd64.tar.gz
+    && rm go${GO_VERSION}.linux-${TARGETARCH}.tar.gz
 
 RUN /usr/local/go/bin/go install github.com/Azure/alzlib/cmd/alzlibtool@latest
 
@@ -57,9 +59,9 @@ COPY --from=alzlibtool-build /root/go/bin/alzlibtool /usr/local/bin/alzlibtool
 
 # Install homebrew
 RUN mkdir -p /home/linuxbrew \
-  && git clone https://github.com/Homebrew/brew /home/linuxbrew/.linuxbrew \
-  && eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv) \
-  && chown -R vscode /home/linuxbrew/.linuxbrew
+    && git clone https://github.com/Homebrew/brew /home/linuxbrew/.linuxbrew \
+    && eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv) \
+    && chown -R vscode /home/linuxbrew/.linuxbrew
 
 USER vscode
 
