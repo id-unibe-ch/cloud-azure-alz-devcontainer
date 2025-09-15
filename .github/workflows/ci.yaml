@@ -10,12 +10,27 @@ permissions:
   contents: read
   packages: read
 
+env:
+  REGISTRY_IMAGE: id-unibe-ch/cloud-azure-alz-devcontainer
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - linux/amd64
+          - linux/arm64
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
+
+      - name: Set up QEMU for multi-architecture builds
+        uses: docker/setup-qemu-action@v3
+
+      - name: Setup Docker buildx for multi-architecture builds
+        uses: docker/setup-buildx-action@v3
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -29,3 +44,4 @@ jobs:
         with:
           configFile: devcontainer.json
           cacheFrom: ghcr.io/id-unibe-ch/cloud-azure-alz-devcontainer
+          platform: ${{ matrix.platform }}
