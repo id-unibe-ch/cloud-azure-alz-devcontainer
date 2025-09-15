@@ -13,8 +13,17 @@ permissions:
   packages: write
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux/amd64
+            tag: latest-amd64
+          - platform: linux/arm64
+            tag: latest-arm64
+
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -38,6 +47,33 @@ jobs:
           configFile: devcontainer.json
           imageName: ghcr.io/id-unibe-ch/cloud-azure-alz-devcontainer
           cacheFrom: ghcr.io/id-unibe-ch/cloud-azure-alz-devcontainer
-          imageTag: latest,${{ github.sha }}
+          imageTag: ${{ matrix.tag }}
           push: always
-          platform: linux/amd64,linux/arm64
+          platform: ${{ matrix.platform }}
+
+  merge:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Inspect Docker Images
+        run: |
+          docker image inspect ghcr.io/id-unibe-ch/cloud-azure-alz-devcontainer:latest-amd64
+          docker image inspect ghcr.io/id-unibe-ch/cloud-azure-alz-devcontainer:latest-arm64
+
+      - name: Merge Docker images
+        run: |
+          docker manifest create \
+            ghcr.io/id-unibe-ch/cloud-azure-alz-devcontainer:latest \
+            --amend ghcr.io/id-unibe-ch/cloud-azure-alz-devcontainer:latest-amd64 \
+            --amend ghcr.io/id-unibe-ch/cloud-azure-alz-devcontainer:latest-arm64
+
+      - name: Push merged Docker image
+        run: |
+          docker manifest push ghcr.io/id-unibe-ch/cloud-azure-alz-devcontainer:latest

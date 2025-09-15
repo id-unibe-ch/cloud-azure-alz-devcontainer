@@ -10,9 +10,6 @@ permissions:
   contents: read
   packages: read
 
-env:
-  REGISTRY_IMAGE: id-unibe-ch/cloud-azure-alz-devcontainer
-
 jobs:
   build:
     runs-on: ubuntu-latest
