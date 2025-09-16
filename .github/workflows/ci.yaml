@@ -12,13 +12,17 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
-        platform:
-          - linux/amd64
-          - linux/arm64
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-24.04
+            tag: latest-amd64
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+            tag: latest-arm64
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -40,5 +44,5 @@ jobs:
         uses: devcontainers/ci@v0.3
         with:
           configFile: devcontainer.json
-          cacheFrom: ghcr.io/id-unibe-ch/cloud-azure-alz-devcontainer
+          cacheFrom: ghcr.io/id-unibe-ch/cloud-azure-alz-devcontainer:${{ matrix.tag }}
           platform: ${{ matrix.platform }}
