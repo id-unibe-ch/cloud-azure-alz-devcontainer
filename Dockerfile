@@ -4,8 +4,8 @@ USER root
 
 RUN mkdir -p /etc/apt/keyrings \
     && apt-get update \
-    && apt-get install curl jq apt-transport-https ca-certificates gnupg lsb-release python3-pip pipx -y \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get install curl jq apt-transport-https ca-certificates gnupg lsb-release python3-pip pipx software-properties-common -y \
+    && rm -rf /var/lib/apt/lists/* 
 
 FROM intermediate AS azure-build
 
@@ -45,6 +45,17 @@ RUN curl -sSLo ./go${GO_VERSION}.linux-${TARGETARCH}.tar.gz https://go.dev/dl/go
 
 RUN /usr/local/go/bin/go install github.com/Azure/alzlib/cmd/alzlibtool@latest
 
+FROM --platform=$BUILDPLATFORM intermediate AS pwsh-build
+
+ARG TARGETARCH
+ENV PWSH_VERSION=7.5.3
+RUN PWSHARCH=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/x64/) \
+    && curl -sSLo ./powershell.tar.gz https://github.com/PowerShell/PowerShell/releases/download/v${PWSH_VERSION}/powershell-${PWSH_VERSION}-linux-${PWSHARCH}.tar.gz \
+    && mkdir -p /opt/microsoft/powershell/7 \
+    && tar -xzf powershell.tar.gz -C /opt/microsoft/powershell/7 \
+    && chmod +x /opt/microsoft/powershell/7/pwsh \
+    && rm powershell.tar.gz
+
 FROM intermediate
 
 COPY --from=azure-build /usr/bin/az /usr/bin/az 
@@ -56,6 +67,9 @@ COPY --from=trivy-build /usr/bin/trivy /usr/bin/trivy
 COPY --from=quay.io/terraform-docs/terraform-docs:latest /usr/local/bin/terraform-docs /usr/local/bin/terraform-docs
 COPY --from=tflint-build /usr/local/bin/tflint /usr/local/bin/tflint
 COPY --from=alzlibtool-build /root/go/bin/alzlibtool /usr/local/bin/alzlibtool
+COPY --from=pwsh-build /opt/microsoft/powershell/7 /opt/microsoft/powershell/7
+
+RUN ln -s /opt/microsoft/powershell/7/pwsh /usr/bin/pwsh
 
 # Install homebrew
 RUN mkdir -p /home/linuxbrew \
