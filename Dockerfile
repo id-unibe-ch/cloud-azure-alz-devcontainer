@@ -69,7 +69,8 @@ COPY --from=tflint-build /usr/local/bin/tflint /usr/local/bin/tflint
 COPY --from=alzlibtool-build /root/go/bin/alzlibtool /usr/local/bin/alzlibtool
 COPY --from=pwsh-build /opt/microsoft/powershell/7 /opt/microsoft/powershell/7
 
-RUN ln -s /opt/microsoft/powershell/7/pwsh /usr/bin/pwsh
+RUN ln -s /opt/microsoft/powershell/7/pwsh /usr/bin/pwsh \
+  && az bicep install
 
 # Install homebrew
 RUN mkdir -p /home/linuxbrew \
