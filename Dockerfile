@@ -63,9 +63,12 @@ RUN mkdir -p /home/linuxbrew \
     && eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv) \
     && chown -R vscode /home/linuxbrew/.linuxbrew
 
-USER vscode
+ENV PIPX_HOME=/opt/pipx
+ENV PIPX_BIN_DIR=/usr/local/bin
+RUN mkdir -p /opt/pipx \
+    && pipx install pre-commit checkov check-jsonschema jsonschema-markdown
 
-RUN pipx ensurepath && pipx install pre-commit checkov check-jsonschema jsonschema-markdown
+USER vscode
 
 ENV PATH="$PATH:/home/linuxbrew/.linuxbrew/bin"
 RUN brew config && brew cleanup --prune=all 
