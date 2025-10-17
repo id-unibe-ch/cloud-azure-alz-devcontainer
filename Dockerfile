@@ -83,8 +83,8 @@ COPY --from=alzlibtool-build /root/go/bin/alzlibtool /usr/local/bin/alzlibtool
 COPY --from=pwsh-build /opt/microsoft/powershell/7 /opt/microsoft/powershell/7
 COPY --from=bicep-langserver-build /opt/bicep-langserver /opt/bicep-langserver
 
-RUN echo "#!/bin/bash\n\nexec dotnet /opt/bicep-langserver/Bicep.LangServer.dll" > /usr/local/bin/bicep-langserver \
-  && chmod +x /usr/local/bin/bicep-langserver \
+RUN echo "#!/bin/bash\n\nexec dotnet /opt/bicep-langserver/Bicep.LangServer.dll" > /usr/local/bin/bicep-lsp \
+  && chmod +x /usr/local/bin/bicep-lsp \
   && ln -s /opt/microsoft/powershell/7/pwsh /usr/bin/pwsh \
   && az bicep install
 
