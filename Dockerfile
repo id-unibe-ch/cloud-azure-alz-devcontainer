@@ -5,6 +5,9 @@ USER root
 RUN mkdir -p /etc/apt/keyrings \
     && apt-get update \
     && apt-get install curl jq apt-transport-https ca-certificates gnupg lsb-release python3-pip pipx software-properties-common -y \
+    && add-apt-repository ppa:dotnet/backports \
+    && apt-get update \
+    && apt-get install -y dotnet-sdk-8.0 \
     && rm -rf /var/lib/apt/lists/* 
 
 FROM intermediate AS azure-build
@@ -56,6 +59,16 @@ RUN PWSHARCH=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/x64/) \
     && chmod +x /opt/microsoft/powershell/7/pwsh \
     && rm powershell.tar.gz
 
+FROM intermediate AS bicep-langserver-build
+
+ENV BICEPLS_VERSION=0.38.33
+RUN curl -sSLo ./bicep-langserver.zip https://github.com/Azure/bicep/releases/download/v${BICEPLS_VERSION}/bicep-langserver.zip \
+    && mkdir -p /opt/bicep-langserver \
+    && mv ./bicep-langserver.zip /opt/bicep-langserver \
+    && cd /opt/bicep-langserver \
+    && unzip ./bicep-langserver.zip \
+    && rm /opt/bicep-langserver/bicep-langserver.zip
+
 FROM intermediate
 
 COPY --from=azure-build /usr/bin/az /usr/bin/az 
@@ -68,8 +81,11 @@ COPY --from=quay.io/terraform-docs/terraform-docs:latest /usr/local/bin/terrafor
 COPY --from=tflint-build /usr/local/bin/tflint /usr/local/bin/tflint
 COPY --from=alzlibtool-build /root/go/bin/alzlibtool /usr/local/bin/alzlibtool
 COPY --from=pwsh-build /opt/microsoft/powershell/7 /opt/microsoft/powershell/7
+COPY --from=bicep-langserver-build /opt/bicep-langserver /opt/bicep-langserver
 
-RUN ln -s /opt/microsoft/powershell/7/pwsh /usr/bin/pwsh \
+RUN echo "#!/bin/bash\n\nexec dotnet /opt/bicep-langserver/Bicep.LangServer.dll" > /usr/local/bin/bicep-langserver \
+  && chmod +x /usr/local/bin/bicep-langserver \
+  && ln -s /opt/microsoft/powershell/7/pwsh /usr/bin/pwsh \
   && az bicep install
 
 # Install homebrew
