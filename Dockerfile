@@ -69,6 +69,16 @@ RUN curl -sSLo ./bicep-langserver.zip https://github.com/Azure/bicep/releases/do
     && unzip ./bicep-langserver.zip \
     && rm /opt/bicep-langserver/bicep-langserver.zip
 
+FROM intermediate AS terraform-docs-build
+
+ARG TARGETARCH
+ENV TERRAFORM_DOCS_VERSION=0.22.0
+RUN curl -sSLo ./terraform-docs.tar.gz https://github.com/terraform-docs/terraform-docs/releases/download/v${TERRAFORM_DOCS_VERSION}/terraform-docs-v${TERRAFORM_DOCS_VERSION}-linux-${TARGETARCH}.tar.gz \
+    && tar -xzf terraform-docs.tar.gz \
+    && chmod +x terraform-docs \
+    && mv terraform-docs /usr/local/bin/terraform-docs
+
+
 FROM intermediate
 
 ARG TARGETARCH
@@ -79,7 +89,7 @@ COPY --from=gh-build /usr/bin/gh /usr/bin/gh
 COPY --from=terraform-build /usr/bin/terraform /usr/bin/terraform
 COPY --from=terraform-build /usr/bin/terraform-ls /usr/bin/terraform-ls
 COPY --from=trivy-build /usr/bin/trivy /usr/bin/trivy
-COPY --from=quay.io/terraform-docs/terraform-docs:0.22.0-${TARGETARCH} /usr/local/bin/terraform-docs /usr/local/bin/terraform-docs
+COPY --from=terraform-docs-build /usr/local/bin/terraform-docs /usr/local/bin/terraform-docs
 COPY --from=tflint-build /usr/local/bin/tflint /usr/local/bin/tflint
 COPY --from=alzlibtool-build /root/go/bin/alzlibtool /usr/local/bin/alzlibtool
 COPY --from=pwsh-build /opt/microsoft/powershell/7 /opt/microsoft/powershell/7
